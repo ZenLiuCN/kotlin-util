@@ -1,5 +1,7 @@
 # pure kotlin util collection
 
+[![](https://jitpack.io/v/ZenLiuCN/kotlin-util.svg)](https://jitpack.io/#ZenLiuCN/kotlin-util)
+
 ## modules
 + case-style: tool for recognise and convert between case-style 
     + now support those style (party support unicode)
