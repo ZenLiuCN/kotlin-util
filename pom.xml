@@ -5,7 +5,7 @@
   ~     @Module: kotlin-utils
   ~     @File: pom.xml
   ~     @Author:  lcz20@163.com
-  ~     @LastModified:  2020-04-05 15:51:25
+  ~     @LastModified:  2020-04-05 15:55:37
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -510,10 +510,10 @@
         </dependency>
     </dependencies>
 
-    <repositories>
+<!--    <repositories>
         <repository>
-            <!-- Maven 自带的中央仓库使用的Id为central 如果其他的仓库声明也是用该Id
-            就会覆盖中央仓库的配置 -->
+            &lt;!&ndash; Maven 自带的中央仓库使用的Id为central 如果其他的仓库声明也是用该Id
+            就会覆盖中央仓库的配置 &ndash;&gt;
             <id>mvnrepository</id>
             <name>mvnrepository</name>
             <url>http://www.mvnrepository.com/</url>
@@ -549,7 +549,7 @@
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
-    </repositories>
+    </repositories>-->
 
     <build>
         <pluginManagement>
