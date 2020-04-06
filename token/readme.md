@@ -2,11 +2,11 @@
 ## usage
 + set global formula
 ```kotlin
-Tokenizer.setFormula(listOf(Long::class, String::class, String::class))
+Tokenizer.setFormula(listOf(Long::class, String::class, Int::class))
 ```
 + generate token
 ```kotlin
-Tokenizer.generator(listOf(1,1000))
+Tokenizer.generator(listOf(1L,"someusername",Role.USER.ordinal))
 // will return null if formula is invalid,else return token String
 ```
 + parse token
