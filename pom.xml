@@ -17,7 +17,7 @@
   ~   @Module: kotlin-utils
   ~   @File: pom.xml
   ~   @Author:  lcz20@163.com
-  ~   @LastModified:  2020-04-06 16:35:14
+  ~   @LastModified:  2020-04-06 18:52:30
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -33,7 +33,6 @@
 
     <modules>
         <module>case-style</module>
-        <module>exposed-lite</module>
         <module>token</module>
     </modules>
     <properties>
