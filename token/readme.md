@@ -6,7 +6,12 @@ Tokenizer.setFormula(listOf(Long::class, String::class, String::class))
 ```
 + generate token
 ```kotlin
-Tokenizer.generator(someToken)
+Tokenizer.generator(listOf(1,1000))
+// will return null if formula is invalid,else return token String
+```
++ parse token
+```kotlin
+Tokenizer.parse(someToken)
 // will return null if token is invalid,else return formula value with BsonShortId
 ```
 ## benchmark
