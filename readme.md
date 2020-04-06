@@ -15,3 +15,4 @@
         + rawUpper `JUST NORMAL SPACE DIVIDER STRING WITH UPPER CASE` **need testing**
         + rawLower `just normal space divider string with lower case` **need testing**
     
++ token: see[module](https://github.com/ZenLiuCN/kotlin-util/blob/master/token/readme.md)
