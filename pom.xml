@@ -17,7 +17,7 @@
   ~   @Module: kotlin-utils
   ~   @File: pom.xml
   ~   @Author:  lcz20@163.com
-  ~   @LastModified:  2020-04-06 18:52:30
+  ~   @LastModified:  2020-04-06 18:55:17
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -529,46 +529,12 @@
         </dependency>
     </dependencies>
 
-    <!--    <repositories>
-            <repository>
-                &lt;!&ndash; Maven 自带的中央仓库使用的Id为central 如果其他的仓库声明也是用该Id
-                就会覆盖中央仓库的配置 &ndash;&gt;
-                <id>mvnrepository</id>
-                <name>mvnrepository</name>
-                <url>http://www.mvnrepository.com/</url>
-                <layout>default</layout>
-                <releases>
-                    <enabled>true</enabled>
-                </releases>
-                <snapshots>
-                    <enabled>false</enabled>
-                </snapshots>
-            </repository>
-            <repository>
-                <id>ali-central</id>
-                <url>http://maven.aliyun.com/nexus/content/groups/public</url>
-                <releases>
-                    <enabled>true</enabled>
-                </releases>
-                <snapshots>
-                    <enabled>false</enabled>
-                </snapshots>
-            </repository>
-            <repository>
-                <id>snapshots</id>
-                <url>http://maven.aliyun.com/nexus/content/groups/public</url>
-                <releases>
-                    <enabled>false</enabled>
-                </releases>
-                <snapshots>
-                    <enabled>true</enabled>
-                </snapshots>
-            </repository>
-            <repository>
-                <id>jitpack.io</id>
-                <url>https://jitpack.io</url>
-            </repository>
-        </repositories>-->
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
 
     <build>
         <pluginManagement>
