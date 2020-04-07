@@ -21,11 +21,10 @@
 
 package cn.zenliu.kotlin.utll.token
 
-import cn.zenliu.bsonid.*
-import cn.zenliu.utils.lzstring4k.*
-import java.io.*
-import java.security.*
-import kotlin.reflect.*
+import cn.zenliu.bsonid.BsonShortId
+import cn.zenliu.utils.lzstring4k.LZ4K
+import java.security.SecureRandom
+import kotlin.reflect.KClass
 
 typealias Formula = List<KClass<*>>
 
@@ -112,11 +111,10 @@ object Tokenizer {
 		Int::class,
 		Byte::class,
 		String::class,
-		Long::class,
-		ByteArray::class)
+		Long::class)
 
 	private fun Formula.assert() = run {
-		assert(all { supportedClass.contains(it) }) { "none supported class ${find { !supportedClass.contains(it) }} in formula" }
+		assert(all { supportedClass.contains(it) }) { "none supported class ${find { !supportedClass.contains(it) }?.simpleName} in formula" }
 		this
 	}
 
@@ -154,12 +152,6 @@ object Tokenizer {
 			Long::class -> code.toLongOrNull(16)?.let { it - id.hashCoding }
 			Int::class -> code.toIntOrNull(16)?.let { it - id.hashCoding }
 			Byte::class -> code.toByteOrNull(16)?.let { it - id.hashCoding }
-			ByteArray::class -> code.chunked(2)
-				.map {
-					it.toByteOrNull(16)
-						?: throw IllegalArgumentException("fail to decode byte from '$it'")
-				}
-				.toTypedArray()
 			String::class -> code.chunked(6).map {
 				it.toLongOrNull(16)?.toChar()
 					?: throw IllegalArgumentException("fail to decode Char from '$it'")
@@ -180,7 +172,6 @@ object Tokenizer {
 		is Int -> (this + id.hashCoding).toString(16).padForCompress().let(::compress)
 		is Long -> (this + id.hashCoding).toString(16).padForCompress().let(::compress)
 		is Byte -> (this + id.hashCoding).toString(16).padForCompress().let(::compress)
-		is ByteArray -> joinToString("") { it.toString(16) }.padForCompress().let(::compress)
 		is String -> this.toCharArray().joinToString("") {
 			it.toLong().toString(16).padStart(6, '0')
 		}.let(::compress).reduceString()
@@ -197,17 +188,17 @@ object Tokenizer {
 
 	/**
 	 *
-	 * @param data List<Any>
+	 * @param payload List<Any>
 	 * @param formula List<KClass<*>>? optional default use pre set formula
 	 * @return String?
 	 */
-	fun generator(data: List<Any>, formula: Formula? = null): String? = run {
+	fun generator(payload: List<Any>, formula: Formula? = null): String? = run {
 		val form = (formula ?: this.formula)
-		if (data.size != form.size) return@run null
+		if (payload.size != form.size) return@run null
 		val bsTK = BsonShortId.get()
 		kotlin.runCatching {
 			buildString {
-				data.forEachIndexed { i, c ->
+				payload.forEachIndexed { i, c ->
 					if (i > 0) append(mapperFrom)
 					append(c.encode(bsTK))
 				}
@@ -225,7 +216,7 @@ object Tokenizer {
 	 * @param formula List<KClass<*>>? optional default use pre set formula
 	 * @return List<Serializable>? null(token invalid) List<Formula,BsonShortId>
 	 */
-	fun parser(token: String, formula: Formula? = null): List<Serializable>? =
+	fun parser(token: String, formula: Formula? = null): List<Any>? =
 		(formula ?: this.formula)
 			.let { form ->
 				token

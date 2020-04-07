@@ -24,21 +24,21 @@ package cn.zenliu.kotlin.utll.token
 import cn.zenliu.kotlin.utll.token.Tokenizer.generator
 import cn.zenliu.kotlin.utll.token.Tokenizer.parser
 import cn.zenliu.kotlin.utll.token.Tokenizer.setFormula
-import org.junit.jupiter.api.*
-import kotlin.system.*
-import kotlin.test.*
+import org.junit.jupiter.api.Test
+import kotlin.system.measureNanoTime
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 internal class TokenizerTest {
 	val formula = listOf(Long::class, String::class, String::class)
 	val raw = listOf(1024L, "some user", "some 中午")
 	val raw1 = listOf(1024L, "中午", "中午中午中午中午")
 	val formula2 = listOf(Long::class, Byte::class, Long::class)
-	val raw2 = listOf(1024L, 0x12, 112315465465L)
-	val raw3 = listOf(1024L, 125, 5565664644L)
+	val raw2 = listOf(1024L, 25.toByte(), 112315465465L)
+	val raw3 = listOf(1024L, 125.toByte(), 5565664644L)
 
 	@Test
 	fun generate() {
-
 		setFormula(formula)
 		val token = generator(raw)
 		assertNotNull(token)
@@ -82,12 +82,14 @@ internal class TokenizerTest {
 
 			}
 		}.apply { println("${this / (10000 * 2.0 * 1000)} ms/op for parse") }
+
 		println("-------with out String-------")
+
 		setFormula(formula2)
 		val token2 = generator(raw2)!!
 		val token3 = generator(raw3)!!
 		measureNanoTime {
-			(0 until 10000).forEach {
+			(0 until 10000).forEach { _ ->
 
 				generator(raw2)!!
 				generator(raw3)!!
@@ -95,7 +97,7 @@ internal class TokenizerTest {
 			}
 		}.apply { println("${this / (10000 * 2.0 * 1000)} ms/op for generate") }
 		measureNanoTime {
-			(0 until 10000).forEach {
+			(0 until 10000).forEach { _ ->
 				parser(token2)
 				parser(token3)
 			}

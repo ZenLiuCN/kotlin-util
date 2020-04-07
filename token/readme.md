@@ -1,4 +1,9 @@
 # Token generate and parse
+## supported payload type
++ Long
++ Int
++ Byte
++ String
 ## usage
 + set global formula
 ```kotlin
