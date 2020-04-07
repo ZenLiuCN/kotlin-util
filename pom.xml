@@ -17,7 +17,7 @@
   ~   @Module: kotlin-utils
   ~   @File: pom.xml
   ~   @Author:  lcz20@163.com
-  ~   @LastModified:  2020-04-06 18:55:17
+  ~   @LastModified:  2020-04-07 22:47:06
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -34,6 +34,7 @@
     <modules>
         <module>case-style</module>
         <module>token</module>
+        <module>zipo</module>
     </modules>
     <properties>
         <java.version>1.8</java.version>
