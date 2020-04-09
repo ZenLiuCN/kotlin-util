@@ -14,10 +14,10 @@
   ~  limitations under the License.
   ~
   ~   @Project: kotlin-utils
-  ~   @Module: zipo
+  ~   @Module: hash
   ~   @File: pom.xml
   ~   @Author:  lcz20@163.com
-  ~   @LastModified:  2020-04-07 22:47:06
+  ~   @LastModified:  2020-04-09 21:20:59
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -30,7 +30,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>zipo</artifactId>
+    <artifactId>hash</artifactId>
 
 
 </project>

@@ -13,13 +13,13 @@
  *  limitations under the License.
  *
  *   @Project: kotlin-utils
- *   @Module: zipo
+ *   @Module: hash
  *   @File: XXHash.kt
  *   @Author:  lcz20@163.com
- *   @LastModified:  2020-04-08 01:08:07
+ *   @LastModified:  2020-04-09 21:21:56
  */
 
-package cn.zenliu.kotlin.util.zipo
+package cn.zenliu.kotlin.util.hash
 
 
 /**

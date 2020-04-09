@@ -13,13 +13,13 @@
  *  limitations under the License.
  *
  *   @Project: kotlin-utils
- *   @Module: zipo
+ *   @Module: hash
  *   @File: EndianReader.kt
  *   @Author:  lcz20@163.com
- *   @LastModified:  2020-04-08 00:18:46
+ *   @LastModified:  2020-04-09 21:22:13
  */
 
-package cn.zenliu.kotlin.util.zipo
+package cn.zenliu.kotlin.util.hash
 
 import java.math.*
 
@@ -69,12 +69,12 @@ interface EndianReader {
 	class BigEndianReader(private val bytes: ByteArray) : EndianReader {
 		override val size: Int get() = bytes.size
 		override operator fun get(i: Int) = bytes[i]
-		override fun getIntOrNull(i: Int) = runCatching {
+		override fun getIntOrNull(i: Int): Int? = runCatching {
 			(0..3)
 				.sumBy { bytes[it + i].toInt() and 255 shl 8 * (3 - it) }
 		}.getOrNull()
 
-		override fun getLongOrNull(i: Int) = runCatching {
+		override fun getLongOrNull(i: Int): Long? = runCatching {
 			(0..7)
 				.map { bytes[it].toLong() and 255.toLong() shl (8 * (7 - it)) }
 				.sum()
