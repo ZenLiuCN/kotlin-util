@@ -131,20 +131,8 @@ object Tokenizer {
 		.runCatching { formula.assert() }
 		.getOrNull() != null
 
-	/**
-	 * String will be decompress as LZ Base64 compressed string
-	 * @receiver String
-	 * @return String?
-	 */
-	private fun String.restoreString(): String? = this
 
-	// LZ4K.decompressFromBase64(this)
-	private fun String.reduceString() = this
-	//LZ4K.compressToBase64(this).replace("=", "")
-
-	private
-
-	val BsonShortId.hashCoding
+	private val BsonShortId.hashCoding
 		get() = instant.epochSecond.and(0xff) + counter
 
 	private var formula: Formula = listOf(Long::class)
@@ -155,6 +143,34 @@ object Tokenizer {
 	 */
 	fun setFormula(formula: Formula) {
 		this.formula = formula.assert()
+	}
+
+	/**
+	 * String will be decompress as LZ Base64 compressed string
+	 * @receiver String
+	 * @return String?
+	 */
+	private fun String.restoreString(): String? = this
+		.split('0')
+		.filter { it.isNotBlank() }
+		.joinToString("") {
+			it.padStart(4, '0')
+		}
+
+	// LZ4K.decompressFromBase64(this)
+	private fun String.reduceString() = this
+		.chunked(4)
+		.joinToString("") {
+			"0${it.replaceFirst("^0+".toRegex(), "")}"
+		}
+	//LZ4K.compressToBase64(this).replace("=", "")
+
+
+	private fun String.padForCompress(count: Int = 3) = run {
+		val rem = length.rem(count)
+		if (rem == 0) {
+			this
+		} else padStart(length + count - rem, '0')
 	}
 
 	private fun String.decode(kClass: KClass<*>?, id: BsonShortId) = decompress(
@@ -173,14 +189,6 @@ object Tokenizer {
 			}.joinToString("") { it.toString() }
 			else -> null
 		}
-	}
-
-
-	private fun String.padForCompress(count: Int = 3) = run {
-		val rem = length.rem(count)
-		if (rem == 0) {
-			this
-		} else padStart(length + count - rem, '0')
 	}
 
 	private fun Any.encode(id: BsonShortId) = when (this) {

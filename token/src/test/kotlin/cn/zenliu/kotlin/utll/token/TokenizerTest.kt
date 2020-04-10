@@ -32,7 +32,7 @@ import kotlin.test.assertNotNull
 internal class TokenizerTest {
 	val formula = listOf(Long::class, String::class, String::class)
 	val raw = listOf(1024L, "some user", "some 中午")
-	val raw1 = listOf(1024L, "中午", "中午中午中午中午")
+	val raw1 = listOf(1024L, "中午", "中午中午中午中午some")
 	val formula2 = listOf(Long::class, Byte::class, Long::class)
 	val raw2 = listOf(1024L, 25.toByte(), 112315465465L)
 	val raw3 = listOf(1024L, 125.toByte(), 5565664644L)
