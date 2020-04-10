@@ -22,7 +22,6 @@
 package cn.zenliu.kotlin.utll.token
 
 import cn.zenliu.bsonid.BsonShortId
-import cn.zenliu.utils.lzstring4k.LZ4K
 import java.security.SecureRandom
 import kotlin.reflect.KClass
 
@@ -137,11 +136,27 @@ object Tokenizer {
 	 * @receiver String
 	 * @return String?
 	 */
-	private fun String.restoreString(): String? = LZ4K.decompressFromBase64(this)
-	private fun String.reduceString() = LZ4K.compressToBase64(this).replace("=", "")
+	private fun String.restoreString(): String? = this
 
-	private val BsonShortId.hashCoding get() = instant.epochSecond.and(0xff) + counter
+	// LZ4K.decompressFromBase64(this)
+	private fun String.reduceString() = this
+	//LZ4K.compressToBase64(this).replace("=", "")
+
+	private
+
+	val BsonShortId.hashCoding
+		get() = instant.epochSecond.and(0xff) + counter
+
 	private var formula: Formula = listOf(Long::class)
+
+	/**
+	 * set default formula
+	 * @param formula List<KClass<*>>
+	 */
+	fun setFormula(formula: Formula) {
+		this.formula = formula.assert()
+	}
+
 	private fun String.decode(kClass: KClass<*>?, id: BsonShortId) = decompress(
 		if (kClass == String::class) {
 			this.restoreString()
@@ -176,14 +191,6 @@ object Tokenizer {
 			it.toLong().toString(16).padStart(6, '0')
 		}.let(::compress).reduceString()
 		else -> throw IllegalArgumentException("fail to encode type of ${this::class.simpleName} of $this")
-	}
-
-	/**
-	 * set default formula
-	 * @param formula List<KClass<*>>
-	 */
-	fun setFormula(formula: Formula) {
-		this.formula = formula.assert()
 	}
 
 	/**
@@ -230,15 +237,15 @@ object Tokenizer {
 					?.let parse@{
 						// last one must be bsonShortId
 						val bsTK = kotlin.runCatching {
-							BsonShortId(it.last().replace(mapperTo, mapperFrom))
-						}
+								BsonShortId(it.last().replace(mapperTo, mapperFrom))
+							}
 							.getOrNull()
 							?: return@parse null
 						kotlin.runCatching {
 							it.mapIndexedNotNull { i, s ->
-								if (i == it.lastIndex) null
-								else s.decode(form[i], bsTK)
-							}
+									if (i == it.lastIndex) null
+									else s.decode(form[i], bsTK)
+								}
 								.toMutableList()
 								.apply { add(bsTK) }
 						}.onFailure {
