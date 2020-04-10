@@ -16,51 +16,25 @@
  *   @Module: token
  *   @File: Tokenizer.kt
  *   @Author:  lcz20@163.com
- *   @LastModified:  2020-04-06 18:47:11
+ *   @LastModified:  2020-04-10 23:21:39
  */
 
 package cn.zenliu.kotlin.utll.token
 
-import cn.zenliu.bsonid.BsonShortId
-import java.security.SecureRandom
-import kotlin.reflect.KClass
+import cn.zenliu.bsonid.*
+import cn.zenliu.kotlin.utll.token.format.BinaryFormat.compressedHexRestore
+import cn.zenliu.kotlin.utll.token.format.BinaryFormat.fromHex
+import cn.zenliu.kotlin.utll.token.format.BinaryFormat.hexCompress
+import cn.zenliu.kotlin.utll.token.format.BinaryFormat.isCompressedChar
+import cn.zenliu.kotlin.utll.token.format.BinaryFormat.padHex
+import cn.zenliu.kotlin.utll.token.format.BinaryFormat.padHexRestore
+import cn.zenliu.kotlin.utll.token.format.BinaryFormat.toHex
+import java.security.*
+import kotlin.reflect.*
 
 typealias Formula = List<KClass<*>>
 
 object Tokenizer {
-
-	//<editor-fold desc="Hex Compressor">
-	internal fun decompress(shortId: String?): String {
-		if (shortId == null || shortId.length.rem(2) != 0) {
-			throw IllegalArgumentException("$shortId =>${shortId?.length} =>${shortId?.length?.rem(2)}")
-		}
-		return buildString {
-			val str = shortId.replace(mapperTo, mapperFrom).toCharArray()
-			for (i in 0..str.lastIndex step 2) {
-				val pre = str[i].asInt
-				val end = str[i + 1].asInt
-				append((pre shr 2).asChar)
-				append(((pre and 3 shl 2) + (end shr 4)).asChar)
-				append((end and 15).asChar)
-			}
-		}
-	}
-
-	internal fun compress(longId: String?): String {
-		if (longId == null || longId.length.rem(3) != 0) {
-			throw IllegalArgumentException("$longId =>${longId?.length} =>${longId?.length?.rem(3)}")
-		}
-		return buildString {
-			val str = longId.toCharArray()
-			for (i in 0..str.lastIndex step 3) {
-				val pre = str[i].asInt
-				val mid = str[i + 1].asInt
-				val end = str[i + 2].asInt
-				append(((pre shl 2) + (mid shr 2)).asChar)
-				append((((mid and 3) shl 4) + end).asChar)
-			}
-		}.replace(mapperFrom, mapperTo)
-	}
 
 	private var mapperTo: Char = '.'
 
@@ -74,8 +48,8 @@ object Tokenizer {
 		assert(
 			when {
 				from == to -> false
-				from != null && code.contains(from) -> false
-				to != null && code.contains(to) -> false
+				from != null && from.isCompressedChar() -> false
+				to != null && to.isCompressedChar() -> false
 				else -> true
 			}
 		)
@@ -84,25 +58,9 @@ object Tokenizer {
 		mapperTo = to ?: '.'
 	}
 
-
-	@Suppress("SpellCheckingInspection")
-	private const val code = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_"
-	private val Int.asChar
-		get() = when (this) {
-			in 0..63 -> code[this]
-			else -> throw IllegalArgumentException()
-		}
-	private val Char.asInt
-		get() = code
-			.indexOf(this)
-			.let {
-				if (it == -1) throw IllegalArgumentException()
-				it
-			}
-	//</editor-fold>
-
 	internal fun rand() = SecureRandom().nextLong().let { if (it < 0) -it else it }
 
+	//<editor-fold desc="Formula">
 	/**
 	 * what class Tokenizer formula supported
 	 */
@@ -131,10 +89,6 @@ object Tokenizer {
 		.runCatching { formula.assert() }
 		.getOrNull() != null
 
-
-	private val BsonShortId.hashCoding
-		get() = instant.epochSecond.and(0xff) + counter
-
 	private var formula: Formula = listOf(Long::class)
 
 	/**
@@ -144,62 +98,32 @@ object Tokenizer {
 	fun setFormula(formula: Formula) {
 		this.formula = formula.assert()
 	}
+	//</editor-fold>
 
-	/**
-	 * String will be decompress as LZ Base64 compressed string
-	 * @receiver String
-	 * @return String?
-	 */
-	private fun String.restoreString(): String? = this
-		.split('0')
-		.filter { it.isNotBlank() }
-		.joinToString("") {
-			it.padStart(4, '0')
-		}
-
-	// LZ4K.decompressFromBase64(this)
-	private fun String.reduceString() = this
-		.chunked(4)
-		.joinToString("") {
-			"0${it.replaceFirst("^0+".toRegex(), "")}"
-		}
-	//LZ4K.compressToBase64(this).replace("=", "")
+	private val BsonShortId.hashCoding
+		get() = instant.epochSecond.and(0xff) + counter
 
 
-	private fun String.padForCompress(count: Int = 3) = run {
-		val rem = length.rem(count)
-		if (rem == 0) {
-			this
-		} else padStart(length + count - rem, '0')
-	}
-
-	private fun String.decode(kClass: KClass<*>?, id: BsonShortId) = decompress(
-		if (kClass == String::class) {
-			this.restoreString()
-		} else this
-	).let { code ->
-		when (kClass) {
-			null -> null
-			Long::class -> code.toLongOrNull(16)?.let { it - id.hashCoding }
-			Int::class -> code.toIntOrNull(16)?.let { it - id.hashCoding }
-			Byte::class -> code.toByteOrNull(16)?.let { it - id.hashCoding }
-			String::class -> code.chunked(6).map {
-				it.toLongOrNull(16)?.toChar()
-					?: throw IllegalArgumentException("fail to decode Char from '$it'")
-			}.joinToString("") { it.toString() }
-			else -> null
-		}
-	}
+	private fun String.decode(kClass: KClass<*>?, id: BsonShortId) =
+		this.replace(mapperTo, mapperFrom).compressedHexRestore()
+			.let { code ->
+				when (kClass) {
+					null -> null
+					Long::class -> code.toLongOrNull(16)?.let { it - id.hashCoding }
+					Int::class -> code.toIntOrNull(16)?.let { it - id.hashCoding }
+					Byte::class -> code.toByteOrNull(16)?.let { it - id.hashCoding }
+					String::class -> code.padHexRestore().fromHex().let { String(it) }
+					else -> null
+				}
+			}
 
 	private fun Any.encode(id: BsonShortId) = when (this) {
-		is Int -> (this + id.hashCoding).toString(16).padForCompress().let(::compress)
-		is Long -> (this + id.hashCoding).toString(16).padForCompress().let(::compress)
-		is Byte -> (this + id.hashCoding).toString(16).padForCompress().let(::compress)
-		is String -> this.toCharArray().joinToString("") {
-			it.toLong().toString(16).padStart(6, '0')
-		}.let(::compress).reduceString()
+		is Int -> (this + id.hashCoding).toString(16)
+		is Long -> (this + id.hashCoding).toString(16)
+		is Byte -> (this + id.hashCoding).toString(16)
+		is String -> toByteArray().toHex()
 		else -> throw IllegalArgumentException("fail to encode type of ${this::class.simpleName} of $this")
-	}
+	}.padHex().hexCompress().replace(mapperFrom, mapperTo)
 
 	/**
 	 *
@@ -245,15 +169,15 @@ object Tokenizer {
 					?.let parse@{
 						// last one must be bsonShortId
 						val bsTK = kotlin.runCatching {
-								BsonShortId(it.last().replace(mapperTo, mapperFrom))
-							}
+							BsonShortId(it.last().replace(mapperTo, mapperFrom))
+						}
 							.getOrNull()
 							?: return@parse null
 						kotlin.runCatching {
 							it.mapIndexedNotNull { i, s ->
-									if (i == it.lastIndex) null
-									else s.decode(form[i], bsTK)
-								}
+								if (i == it.lastIndex) null
+								else s.decode(form[i], bsTK)
+							}
 								.toMutableList()
 								.apply { add(bsTK) }
 						}.onFailure {

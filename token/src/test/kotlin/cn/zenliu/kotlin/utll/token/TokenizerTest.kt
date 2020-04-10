@@ -16,7 +16,7 @@
  *   @Module: token
  *   @File: TokenizerTest.kt
  *   @Author:  lcz20@163.com
- *   @LastModified:  2020-04-06 18:50:16
+ *   @LastModified:  2020-04-11 00:10:48
  */
 
 package cn.zenliu.kotlin.utll.token
@@ -24,10 +24,9 @@ package cn.zenliu.kotlin.utll.token
 import cn.zenliu.kotlin.utll.token.Tokenizer.generator
 import cn.zenliu.kotlin.utll.token.Tokenizer.parser
 import cn.zenliu.kotlin.utll.token.Tokenizer.setFormula
-import org.junit.jupiter.api.Test
-import kotlin.system.measureNanoTime
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
+import org.junit.jupiter.api.*
+import kotlin.system.*
+import kotlin.test.*
 
 internal class TokenizerTest {
 	val formula = listOf(Long::class, String::class, String::class)
@@ -67,21 +66,21 @@ internal class TokenizerTest {
 		val token = generator(raw)!!
 		val token1 = generator(raw1)!!
 		measureNanoTime {
-			(0 until 10000).forEach {
+			(0 until 100000).forEach {
 
 				generator(raw)!!
 				generator(raw1)!!
 
 			}
-		}.apply { println("${this / (10000 * 2.0 * 1000)} ms/op for generate") }
+		}.apply { println("${this / (100000 * 2.0 * 1000)} ms/op for generate") }
 		measureNanoTime {
-			(0 until 10000).forEach {
+			(0 until 100000).forEach {
 
 				parser(token)
 				parser(token1)
 
 			}
-		}.apply { println("${this / (10000 * 2.0 * 1000)} ms/op for parse") }
+		}.apply { println("${this / (100000 * 2.0 * 1000)} ms/op for parse") }
 
 		println("-------with out String-------")
 

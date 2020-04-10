@@ -14,10 +14,10 @@
   ~  limitations under the License.
   ~
   ~   @Project: kotlin-utils
-  ~   @Module: token
+  ~   @Module: format
   ~   @File: pom.xml
   ~   @Author:  lcz20@163.com
-  ~   @LastModified:  2020-04-10 22:56:46
+  ~   @LastModified:  2020-04-10 22:28:30
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -30,13 +30,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>token</artifactId>
+    <artifactId>formater</artifactId>
 
-    <dependencies>
-        <dependency>
-            <groupId>com.github.ZenLiuCN</groupId>
-            <artifactId>bsonid</artifactId>
-        </dependency>
 
-    </dependencies>
 </project>
