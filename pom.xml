@@ -17,7 +17,7 @@
   ~   @Module: kotlin-utils
   ~   @File: pom.xml
   ~   @Author:  lcz20@163.com
-  ~   @LastModified:  2020-04-10 22:54:49
+  ~   @LastModified:  2020-04-11 17:18:35
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -37,6 +37,8 @@
         <module>compress</module>
         <module>hash</module>
         <module>format</module>
+        <module>nquad</module>
+        <module>spec</module>
     </modules>
     <properties>
         <java.version>1.8</java.version>

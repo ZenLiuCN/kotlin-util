@@ -13,13 +13,13 @@
  *  limitations under the License.
  *
  *   @Project: kotlin-utils
- *   @Module: format
+ *   @Module: nquad
  *   @File: BinaryFormat.kt
  *   @Author:  lcz20@163.com
- *   @LastModified:  2020-04-11 00:12:27
+ *   @LastModified:  2020-04-11 16:05:34
  */
 
-package cn.zenliu.kotlin.util.format
+package cn.zenliu.kotlin.util.nquad.util
 
 
 @Suppress("SpellCheckingInspection")
