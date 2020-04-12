@@ -14,16 +14,19 @@
  *
  *   @Project: kotlin-utils
  *   @Module: compress
- *   @File: BitMap.kt
+ *   @File: ZoneMapTest.kt
  *   @Author:  lcz20@163.com
- *   @LastModified:  2020-04-13 01:12:01
+ *   @LastModified:  2020-04-13 01:43:31
  */
 
 package cn.zenliu.kotlin.util.compress
 
-import java.util.*
+import org.junit.jupiter.api.*
 
-fun main() {
-	val b = BitSet()
-	b[510623] = true
+internal class ZoneMapTest {
+	@Test
+	fun zoneMap() {
+		ZoneMap.isCountyLevelCity(510623).apply(::println)
+		ZoneMap.isPrefecturalLevelCity(511181).apply(::println)
+	}
 }
