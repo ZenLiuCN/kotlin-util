@@ -11,12 +11,12 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *  
+ *
  *   @Project: kotlin-utils
  *   @Module: compress
  *   @File: LongBitMap.kt
  *   @Author:  lcz20@163.com
- *   @LastModified:  2020-04-13 23:40:42
+ *   @LastModified:  2020-04-14 00:13:38
  */
 
 package cn.zenliu.kotlin.util.compress.bitmap

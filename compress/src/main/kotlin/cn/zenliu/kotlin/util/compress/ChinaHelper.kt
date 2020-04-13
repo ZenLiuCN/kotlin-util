@@ -16,7 +16,7 @@
  *   @Module: compress
  *   @File: ChinaHelper.kt
  *   @Author:  lcz20@163.com
- *   @LastModified:  2020-04-14 00:11:37
+ *   @LastModified:  2020-04-14 00:24:48
  */
 
 package cn.zenliu.kotlin.util.compress
@@ -58,6 +58,7 @@ object ChinaHelper {
 		}.replace("||", "|") + ">${min.toString(16)},${max.toString(16)},${bits.bitFirst.toString(16)},${bits.bitLast.toString(16)},${bits.bitSize.toString(16)},${bits.intSize.toString(16)}"
 	}
 
+	fun memoryBytes(): Int = bits.data().size * 8
 	fun load(data: String?) {
 		val src = data ?: source
 		val (ar, info) = src.split(">").takeIf { it.size == 2 }

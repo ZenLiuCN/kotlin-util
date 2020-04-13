@@ -16,7 +16,7 @@
  *   @Module: compress
  *   @File: ZoneMapTest.kt
  *   @Author:  lcz20@163.com
- *   @LastModified:  2020-04-14 00:11:37
+ *   @LastModified:  2020-04-14 00:53:45
  */
 
 package cn.zenliu.kotlin.util.compress
@@ -26,7 +26,7 @@ import org.junit.jupiter.api.*
 import kotlin.system.*
 import kotlin.test.*
 
-internal class ZoneMapTest {
+internal class ChinaHelperTest {
 	val raw = intArrayOf(
 		100000,
 		110000,
@@ -3281,77 +3281,20 @@ internal class ZoneMapTest {
 		820008
 	)
 
-	fun init() {
-
-		ChinaHelper.init(raw.min()!!, raw.max()!!)
-		raw.forEach {
-			ChinaHelper.put(it)
+	fun validate(i: Int): Boolean {
+		for (idx in raw) {
+			if (idx == i) return true
 		}
-	}
 
-	internal val Int.idStart inline get() = this / 100
-	internal val Int.idMid inline get() = (this / 100000) * 100000 - this / 10
-	internal val Int.idEnd inline get() = this - proCode * 10000
-	internal val Int.proCode inline get() = this / 10000
-	internal val Int.cityCode inline get() = (this / 100) - proCode * 100
-	internal val Int.zoneCode inline get() = this % 100
-
-	@Test
-	fun trip() {
-		raw.map {
-			listOf(
-				it.proCode, it.cityCode, it.zoneCode, it.idStart, it.idEnd, it.idMid
-			)
-		}.fold(mutableListOf(
-			mutableListOf<Int>(),
-			mutableListOf(),
-			mutableListOf(),
-			mutableListOf(),
-			mutableListOf(),
-			mutableListOf()
-		)) { a, l ->
-			a[0].add(l[0])
-			a[1].add(l[1])
-			a[2].add(l[2])
-			a[3].add(l[3])
-			a[4].add(l[4])
-			a[5].add(l[5])
-			a
-		}.apply {
-			val ps = this[0].toSet()
-			val cs = this[1].toSet()
-			val zs = this[2].toSet()
-			val ss = this[3].toSet()
-			val es = this[4].toSet()
-			val ms = this[5].toSet()
-			println("bitmap need ${(720009 / 64) * 8} byte with long or ${(720009 / 32) * 4} byte with int")
-			println("total mem need ${listOf(ps, cs, zs, ss, es, ms).sumBy { (it.max()!! - it.min()!!) / 32 } * 4} byte by int")
-			var cnt = 0
-			(100000..900000).forEach {
-				val p = it.proCode
-				val c = it.cityCode
-				val z = it.zoneCode
-				val s = it.idStart
-				val e = it.idEnd
-				val m = it.idMid
-				if (ps.contains(p)
-					&& cs.contains(c)
-					&& zs.contains(z)
-					&& ss.contains(s)
-					&& es.contains(e)
-					&& ms.contains(m)
-					&& !raw.contains(it)) {
-					//println("conflict $it")
-					cnt++
-				}
-			}
-			println("conflict total $cnt")
-		}
+		return false
 	}
 
 	@Test
 	fun justGenerate() {
-		init()
+		ChinaHelper.init(raw.min()!!, raw.max()!!)
+		raw.forEach {
+			ChinaHelper.put(it)
+		}
 		raw.size.apply(::println)
 		ChinaHelper.dump().apply {
 			println(this)
@@ -3361,31 +3304,59 @@ internal class ZoneMapTest {
 	}
 
 	@Test
-	fun zoneMap() {
-		init()
-		raw.size.apply(::println)
-		ChinaHelper.dump().apply {
-			println(this)
-			println(this.length)
+	fun validate() {
+		ChinaHelper.load(null)
+		raw.filter { !ChinaHelper.check(it) }.apply { println(this) }
+		(1000000 downTo 999999).filter { !raw.contains(it) }.filter { ChinaHelper.check(it) }.apply { println(this) }
+		assertEquals(false, ChinaHelper.check(131088))
+	}
 
+	/**
+	 * # memory 60 times larger with 100 times faster
+	 *
+	 *  |item            |bitmap              |indexOf              |forIn                |
+	 *  |----------------|-------------------|---------------------|---------------------|
+	 *  |memory of data  |180,008 ≈ 180Kib   |3,251 3KiB           |3,251 3KiB          |
+	 *  |ns per op      | 5.0802313 ≈ 5      |499.79866975≈500     |490.5940168 ≈490≈500|
+	 *
+	 */
+	@Test
+	fun speed() {
+		ChinaHelper.load(null)
+		ChinaHelper.memoryBytes().apply { println("map memory bytes is $this") }
+		raw.size.apply { println("memory bytes is $this") }
+		(1..10000).map { _ ->
+			measureNanoTime {
+				(1..1000).forEach { _ ->
+					assertEquals(true, ChinaHelper.check(820008))
+					assertEquals(false, ChinaHelper.check(131088))
+				}
+			}
+		}.sum().apply {
+			println("bitmap ${this / 20000000.0} ns/op")
+		}
+		(1..10000).map { _ ->
+			measureNanoTime {
+				(1..1000).forEach { _ ->
+					assertEquals(true, validate(820008))
+					assertEquals(false, validate(131088))
+
+				}
+			}
+		}.sum().apply {
+			println("for in break ${this / 20000000.0} ns/op")
+		}
+		(1..10000).map {
+			measureNanoTime {
+				(1..1000).forEach { _ ->
+					assertEquals(true, raw.indexOf(820008) > 0)
+					assertEquals(false, raw.indexOf(131088) > 0)
+				}
+			}
+		}.sum().apply {
+			println("indexOf ${this / 20000000.0} ns/op")
 		}
 
-		measureNanoTime {
-			(0..100000).forEach { _ ->
-				ChinaHelper.check(820008)
-				ChinaHelper.check(820018)
-			}
-		}.apply {
-			println("v1.2 ${(this / 100000) / 2000.0} ms/op")
-		}
-		measureNanoTime {
-			(0..100000).forEach { _ ->
-				raw.contains(820008)
-				raw.contains(820018)
-			}
-		}.apply {
-			println("v1.2 ${(this / 100000) / 2000.0} ms/op")
-		}
 
 	}
 
