@@ -21,7 +21,8 @@
 
 package cn.zenliu.kotlin.util.hash
 
-import java.math.*
+import java.math.BigInteger
+
 
 interface EndianReader {
 	val size: Int
@@ -47,23 +48,7 @@ interface EndianReader {
 				.sum()
 		}.getOrNull()
 
-		companion object {
-			fun toBytes(v: Long): ByteArray = byteArrayOf(
-				(v ushr 0).toByte(),
-				(v ushr 8).toByte(),
-				(v ushr 16).toByte(),
-				(v ushr 24).toByte(),
-				(v ushr 32).toByte(),
-				(v ushr 64).toByte(),
-				(v ushr 48).toByte(),
-				(v ushr 56).toByte())
 
-			fun toBytes(v: Int): ByteArray = byteArrayOf(
-				(v ushr 0 and 0xFF).toByte(),
-				(v ushr 8 and 0xFF).toByte(),
-				(v ushr 16 and 0xFF).toByte(),
-				(v ushr 24 and 0xFF).toByte())
-		}
 	}
 
 	class BigEndianReader(private val bytes: ByteArray) : EndianReader {
@@ -80,51 +65,112 @@ interface EndianReader {
 				.sum()
 		}.getOrNull()
 
-		companion object {
-			fun toBytes(v: Long): ByteArray = byteArrayOf(
-				(v ushr 56).toByte(),
-				(v ushr 48).toByte(),
-				(v ushr 40).toByte(),
-				(v ushr 32).toByte(),
-				(v ushr 24).toByte(),
-				(v ushr 16).toByte(),
-				(v ushr 8).toByte(),
-				(v ushr 0).toByte())
 
-			fun toBytes(v: Int): ByteArray = byteArrayOf(
-				(v ushr 24 and 0xFF).toByte(),
-				(v ushr 16 and 0xFF).toByte(),
-				(v ushr 8 and 0xFF).toByte(),
-				(v ushr 0 and 0xFF).toByte())
-		}
 	}
 
 	companion object {
 		fun toUnsigned(value: Int): Long = 0xffffffffL and value.toLong()
 		fun toUnsigned(value: Long): BigInteger {
-			val v = BigEndianReader.toBytes(value)
-			val vv = ByteArray(v.size + 1)
-			System.arraycopy(v, 0, vv, 1, v.size)
-			return BigInteger(vv)
+			toBigEndianBytes(value).let { v ->
+				val vv = ByteArray(v.size + 1)
+				v.copyInto(vv, 1, 0, v.size)
+				return BigInteger(vv)
+			}
 		}
 
 		fun toUnsigned(values: IntArray): BigInteger {
 			val buffer = ByteArray(values.size * 4 + 1)
-			for (i in values.indices) {
-				val ival = BigEndianReader.toBytes(values[i])
-				System.arraycopy(ival, 0, buffer, i * 4 + 1, 4)
+			values.indices.forEach { i ->
+				toBigEndianBytes(values[i]).copyInto(buffer, i * 4 + 1, 0, 4)
 			}
 			return BigInteger(buffer)
 		}
 
 		fun toUnsigned(values: LongArray): BigInteger {
 			val buffer = ByteArray(values.size * 8 + 1)
-			for (i in values.indices) {
-				val ival = BigEndianReader.toBytes(values[i])
-				System.arraycopy(ival, 0, buffer, i * 8 + 1, 8)
+			values.indices.forEach { i ->
+				toBigEndianBytes(values[i]).copyInto(buffer, i * 8 + 1, 0, 8)
 			}
 			return BigInteger(buffer)
 		}
-	}
 
+		fun longFromLittleEndian(bytes: ByteArray, off: Int = 0, length: Int = bytes.size): Long {
+			var l: Long = 0
+			(0 until length).forEach { i ->
+				l = l or (bytes[off + i].toLong() and 0xffL shl 8 * i)
+			}
+			return l
+		}
+
+		fun longFromLittleEndianV2(bytes: ByteArray, off: Int = 0): Long {
+			var l: Long = 0
+			(0 until 7).forEach { i ->
+				l = l or (bytes[off + i].toLong() and 0xffL shl 8 * i)
+			}
+			return l
+		}
+
+		fun intFromLittleEndian(bytes: ByteArray, off: Int = 0): Int {
+			return longFromLittleEndian(bytes, off, 4).toInt()
+		}
+
+		fun intFromLittleEndianV2(bytes: ByteArray, off: Int = 0): Int {
+			var l: Int = 0
+			(0 until 4).forEach { i ->
+				l = l or (bytes[off + i].toInt() and 0xff shl 8 * i)
+			}
+			return l
+		}
+
+		fun toBigEndianBytes(v: Long): ByteArray = byteArrayOf(
+			(v ushr 56).toByte(),
+			(v ushr 48).toByte(),
+			(v ushr 40).toByte(),
+			(v ushr 32).toByte(),
+			(v ushr 24).toByte(),
+			(v ushr 16).toByte(),
+			(v ushr 8).toByte(),
+			(v ushr 0).toByte())
+
+		fun toBigEndianBytes(v: Int): ByteArray = byteArrayOf(
+			(v ushr 24 and 0xFF).toByte(),
+			(v ushr 16 and 0xFF).toByte(),
+			(v ushr 8 and 0xFF).toByte(),
+			(v ushr 0 and 0xFF).toByte())
+
+		fun toLittleEndianBytes(v: Long): ByteArray = byteArrayOf(
+			(v ushr 0).toByte(),
+			(v ushr 8).toByte(),
+			(v ushr 16).toByte(),
+			(v ushr 24).toByte(),
+			(v ushr 32).toByte(),
+			(v ushr 64).toByte(),
+			(v ushr 48).toByte(),
+			(v ushr 56).toByte())
+
+		fun toLittleEndianBytes(v: Int): ByteArray = byteArrayOf(
+			(v ushr 0 and 0xFF).toByte(),
+			(v ushr 8 and 0xFF).toByte(),
+			(v ushr 16 and 0xFF).toByte(),
+			(v ushr 24 and 0xFF).toByte())
+
+		fun toLittleEndian(out: ByteArray, value: Long, off: Int, length: Int) {
+			var num = value
+			(0 until length).forEach { i ->
+				out[off + i] = (num and 0xff).toByte()
+				num = num shr 8
+			}
+		}
+
+		fun toBigEndian(out: ByteArray, value: Long, off: Int, length: Int) {
+			val last = off + length - 1
+			var num = value
+			(0 until length).forEach { i ->
+				out[last - i] = (num and 0xff).toByte()
+				num = num shr 8
+			}
+		}
+	}
 }
+
+
