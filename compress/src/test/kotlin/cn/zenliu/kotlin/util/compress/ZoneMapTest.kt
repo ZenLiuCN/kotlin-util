@@ -16,14 +16,15 @@
  *   @Module: compress
  *   @File: ZoneMapTest.kt
  *   @Author:  lcz20@163.com
- *   @LastModified:  2020-04-13 01:43:31
+ *   @LastModified:  2020-04-14 00:11:37
  */
 
 package cn.zenliu.kotlin.util.compress
 
 
-import org.junit.jupiter.api.Test
-import kotlin.system.measureNanoTime
+import org.junit.jupiter.api.*
+import kotlin.system.*
+import kotlin.test.*
 
 internal class ZoneMapTest {
 	val raw = intArrayOf(
@@ -3282,9 +3283,80 @@ internal class ZoneMapTest {
 
 	fun init() {
 
-		ZoneMap.init(raw.min()!!, raw.max()!!)
+		ChinaHelper.init(raw.min()!!, raw.max()!!)
 		raw.forEach {
-			ZoneMap.put(it)
+			ChinaHelper.put(it)
+		}
+	}
+
+	internal val Int.idStart inline get() = this / 100
+	internal val Int.idMid inline get() = (this / 100000) * 100000 - this / 10
+	internal val Int.idEnd inline get() = this - proCode * 10000
+	internal val Int.proCode inline get() = this / 10000
+	internal val Int.cityCode inline get() = (this / 100) - proCode * 100
+	internal val Int.zoneCode inline get() = this % 100
+
+	@Test
+	fun trip() {
+		raw.map {
+			listOf(
+				it.proCode, it.cityCode, it.zoneCode, it.idStart, it.idEnd, it.idMid
+			)
+		}.fold(mutableListOf(
+			mutableListOf<Int>(),
+			mutableListOf(),
+			mutableListOf(),
+			mutableListOf(),
+			mutableListOf(),
+			mutableListOf()
+		)) { a, l ->
+			a[0].add(l[0])
+			a[1].add(l[1])
+			a[2].add(l[2])
+			a[3].add(l[3])
+			a[4].add(l[4])
+			a[5].add(l[5])
+			a
+		}.apply {
+			val ps = this[0].toSet()
+			val cs = this[1].toSet()
+			val zs = this[2].toSet()
+			val ss = this[3].toSet()
+			val es = this[4].toSet()
+			val ms = this[5].toSet()
+			println("bitmap need ${(720009 / 64) * 8} byte with long or ${(720009 / 32) * 4} byte with int")
+			println("total mem need ${listOf(ps, cs, zs, ss, es, ms).sumBy { (it.max()!! - it.min()!!) / 32 } * 4} byte by int")
+			var cnt = 0
+			(100000..900000).forEach {
+				val p = it.proCode
+				val c = it.cityCode
+				val z = it.zoneCode
+				val s = it.idStart
+				val e = it.idEnd
+				val m = it.idMid
+				if (ps.contains(p)
+					&& cs.contains(c)
+					&& zs.contains(z)
+					&& ss.contains(s)
+					&& es.contains(e)
+					&& ms.contains(m)
+					&& !raw.contains(it)) {
+					//println("conflict $it")
+					cnt++
+				}
+			}
+			println("conflict total $cnt")
+		}
+	}
+
+	@Test
+	fun justGenerate() {
+		init()
+		raw.size.apply(::println)
+		ChinaHelper.dump().apply {
+			println(this)
+			println(this.length)
+
 		}
 	}
 
@@ -3292,16 +3364,16 @@ internal class ZoneMapTest {
 	fun zoneMap() {
 		init()
 		raw.size.apply(::println)
-		ZoneMap.dump().apply {
+		ChinaHelper.dump().apply {
 			println(this)
 			println(this.length)
-			LZW.compressASCII(this).apply { println(this.size) }
+
 		}
 
 		measureNanoTime {
 			(0..100000).forEach { _ ->
-				ZoneMap.check(820008)
-				ZoneMap.check(820018)
+				ChinaHelper.check(820008)
+				ChinaHelper.check(820018)
 			}
 		}.apply {
 			println("v1.2 ${(this / 100000) / 2000.0} ms/op")
@@ -3314,6 +3386,29 @@ internal class ZoneMapTest {
 		}.apply {
 			println("v1.2 ${(this / 100000) / 2000.0} ms/op")
 		}
-		Thread.sleep(100000)
+
+	}
+
+	@Test
+	fun zoneMapByLoad() {
+		raw.size.apply(::println)
+		ChinaHelper.load(null)
+
+		measureNanoTime {
+			raw.forEach {
+				assertEquals(true, ChinaHelper.check(it), "$it miss hit")
+			}
+		}.apply {
+			println("check ${(this / 100000) / 1000.0} ms/op")
+		}
+
+
+	}
+
+	@Test
+	fun testId() {
+		ChinaHelper.validateCitizenId("510623198001011235").apply {
+			assertEquals(false, this)
+		}
 	}
 }
