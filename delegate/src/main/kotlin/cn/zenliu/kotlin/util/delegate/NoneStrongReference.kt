@@ -14,9 +14,9 @@
  *
  *   @Project: kotlin-utils
  *   @Module: delegate
- *   @File: Weak.kt
+ *   @File: NoneStrongReference.kt
  *   @Author:  lcz20@163.com
- *   @LastModified:  2020-04-21 23:26:30
+ *   @LastModified:  2020-04-21 23:28:04
  */
 @file:Suppress("NOTHING_TO_INLINE")
 
