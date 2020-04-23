@@ -16,7 +16,7 @@
  *   @Module: delegate
  *   @File: NoneStrongReference.kt
  *   @Author:  lcz20@163.com
- *   @LastModified:  2020-04-21 23:28:04
+ *   @LastModified:  2020-04-23 21:29:15
  */
 @file:Suppress("NOTHING_TO_INLINE")
 
@@ -30,7 +30,7 @@ import kotlin.reflect.KProperty
 @Suppress("HardCodedStringLiteral")
 private const val LazyNotInitialized = "Lazy value not initialized yet."
 
-final class WeakRef<T>(private var _value: WeakReference<T?>) {
+class WeakRef<T>(private var _value: WeakReference<T?>) {
 	operator fun getValue(thisRef: Any?, property: KProperty<*>): T? {
 		return _value.get()
 	}
@@ -42,7 +42,7 @@ final class WeakRef<T>(private var _value: WeakReference<T?>) {
 	}
 }
 
-final class SoftRef<T>(private var _value: SoftReference<T?>) {
+class SoftRef<T>(private var _value: SoftReference<T?>) {
 	operator fun getValue(thisRef: Any?, property: KProperty<*>): T? {
 		return _value.get()
 	}
@@ -140,7 +140,7 @@ inline fun <T> weakRef(value: T): WeakRef<T> = WeakRef<T>(WeakReference(value))
 inline fun <T> softRef(value: T): SoftRef<T> = SoftRef<T>(SoftReference(value))
 
 
-fun <T> lazySoft(mode: LazyThreadSafetyMode, initializer: () -> T): Lazy<T> =
+fun <T> lazySoft(mode: LazyThreadSafetyMode = LazyThreadSafetyMode.SYNCHRONIZED, initializer: () -> T): Lazy<T> =
 	when (mode) {
 		LazyThreadSafetyMode.SYNCHRONIZED -> SynchronizedLazyWeakRef(initializer)
 		LazyThreadSafetyMode.PUBLICATION -> throw NotImplementedError("PUBLICATION mode is not supported by " +
