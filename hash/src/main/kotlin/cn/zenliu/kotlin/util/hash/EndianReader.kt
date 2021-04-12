@@ -144,7 +144,7 @@ interface EndianReader {
 			(v ushr 16).toByte(),
 			(v ushr 24).toByte(),
 			(v ushr 32).toByte(),
-			(v ushr 64).toByte(),
+			(v ushr 40).toByte(),
 			(v ushr 48).toByte(),
 			(v ushr 56).toByte())
 
